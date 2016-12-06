@@ -15,6 +15,14 @@ enum NoteStoreState {
   ready,
 }
 
+enum NoteStoreError {
+  none,
+  exception,
+  fileNotFound,
+  needPassword,
+  invalidPassword,
+}
+
 
 class AddNote {
   DateTime time;
@@ -54,7 +62,11 @@ class DeleteNote {
 class NoteStore extends Store {
 
   final DBData _data = new DBData();
+
   NoteStoreState _state = NoteStoreState.none;
+  NoteStoreError _error = NoteStoreError.none;
+  String _errorMsg = '';
+
   String _password = '';
 
   NoteStore() {
@@ -62,6 +74,7 @@ class NoteStore extends Store {
     addNoteAction.listen(_onAddNote);
     editNoteAction.listen(_onEditNote);
     deleteNoteAction.listen(_onDeleteNote);
+    resetNoteAction.listen(_onResetNote);
     _loadJob = _loadNotes('');
   }
 
@@ -74,14 +87,33 @@ class NoteStore extends Store {
   _loadNotes(String pass) async {
     if (_state == NoteStoreState.loading) return;
 
+    _password = pass;
     _state = NoteStoreState.loading;
-
     _data.reset();
+
+    trigger();
 
     try {
       File file = await _getLocalFile();
       if (!await file.exists()) {
-        debugPrint('file(${file.path}) not found.');
+        if (_password.isEmpty) {
+          _state = NoteStoreState.error;
+          _error = NoteStoreError.fileNotFound;
+          debugPrint('file(${file.path}) not found.');
+        } else {
+          _state = NoteStoreState.ready;
+          _error = NoteStoreError.none;
+          _saveNotes();
+        }
+        trigger();
+        return;
+      }
+
+      if (_password.isEmpty) {
+        _state = NoteStoreState.error;
+        _error = NoteStoreError.needPassword;
+        debugPrint('need password.');
+        trigger();
         return;
       }
 
@@ -93,10 +125,19 @@ class NoteStore extends Store {
 
       debugPrint('loading ok.');
       _state = NoteStoreState.ready;
-    } on FileSystemException {
+      _error = NoteStoreError.none;
+    } on DBFileDecodeInvalidPassword catch(e) {
       _state = NoteStoreState.error;
-    } on Exception {
+      _error = NoteStoreError.invalidPassword;
+      _errorMsg = e.toString();
+    } on FileSystemException catch(e) {
       _state = NoteStoreState.error;
+      _error = NoteStoreError.exception;
+      _errorMsg = e.toString();
+    } on Exception catch(e) {
+      _state = NoteStoreState.error;
+      _error = NoteStoreError.exception;
+      _errorMsg = e.toString();
     }
 
     trigger();
@@ -133,6 +174,21 @@ class NoteStore extends Store {
     if (_data.delete(arg.id)) {
       _setDirty();
     }
+  }
+
+  _onResetNote(_) async {
+    if (_state == NoteStoreState.loading) return;
+
+    _password = '';
+
+    _data.reset();
+
+    File file = await _getLocalFile();
+    if (await file.exists()) {
+      await file.delete();
+    }
+
+    await _loadNotes('');
   }
 
   _setDirty() {
@@ -172,6 +228,8 @@ class NoteStore extends Store {
 
   DBDataView get data => new DBDataView(_data);
   NoteStoreState get state => _state;
+  NoteStoreError get error => _error;
+  String get errorMsg => _errorMsg;
 
 }
 
@@ -180,6 +238,7 @@ final Action<String> loadWithPassAction = new Action<String>();
 final Action<AddNote> addNoteAction = new Action<AddNote>();
 final Action<EditNote> editNoteAction = new Action<EditNote>();
 final Action<DeleteNote> deleteNoteAction = new Action<DeleteNote>();
+final Action<Null> resetNoteAction = new Action<Null>();
 
 final StoreToken noteStoreToken = new StoreToken(new NoteStore());
 

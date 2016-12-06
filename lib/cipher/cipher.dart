@@ -30,8 +30,12 @@ class FileCipher {
   }
 
   Uint8List processBlocks( Uint8List inp ) {
+    if (inp.lengthInBytes % 16 != 0) {
+      inp = new Uint8List((inp.lengthInBytes + 15) ~/ 16 * 16);
+    }
     var out = new Uint8List(inp.lengthInBytes);
-    for( var offset=0 ; offset<inp.lengthInBytes ; ) {
+
+    for( var offset=0 ; offset < inp.lengthInBytes ; ) {
       var len = cipher.processBlock( inp, offset, out, offset );
       offset += len;
     }
@@ -61,7 +65,7 @@ class FileCipherEncode extends FileCipher {
 
 class FileCipherDecode extends FileCipher {
 
-  decodeBytes(List<int> bytes, int maxSize) {
+  decodeBytes(List<int> bytes, [int maxSize = 0]) {
 
     var input = new Uint8List.fromList(bytes);
 
@@ -70,7 +74,7 @@ class FileCipherDecode extends FileCipher {
 
     var encoded = processBlocks(input);
 
-    if (encoded.lengthInBytes > maxSize) {
+    if (maxSize > 0 && encoded.lengthInBytes > maxSize) {
       encoded = encoded.sublist(0, maxSize);
     }
 

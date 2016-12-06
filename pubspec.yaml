@@ -6,3 +6,5 @@ dependencies:
   flutter_flux:
     git: git://github.com/flutter/flutter_flux.git
   pointycastle:
+    git: git://github.com/bigflood/pointycastle.git
+    

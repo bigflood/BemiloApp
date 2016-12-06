@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../db/db.dart';
 import '../db/note.dart';
+import '../bemilo.dart';
 
 class NoteInputView extends StatefulWidget {
   NoteInputView({ this.note, Key key }) : super(key: key);
@@ -75,18 +76,18 @@ class _NoteInputViewState extends State<NoteInputView> {
         child: new Block(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           children: <Widget>[
-            createField(
+            createInputField(
               labelText: 'Title',
               initialValue: _info.id < 0 ? InputValue.empty : new InputValue(text:_info.title ?? ''),
               onSaved: (InputValue val) { _info.title = val.text; },
             ),
-            createField(
+            createInputField(
               labelText: 'Content',
               initialValue: _info.id < 0 ? InputValue.empty : new InputValue(text:_info.content ?? ''),
               maxLines: 6,
               onSaved: (InputValue val) { _info.content = val.text; },
             ),
-            createField(
+            createInputField(
               labelText: 'Tags',
               hintText: ', seprated tags',
               initialValue: _info.id < 0 ? InputValue.empty : new InputValue(text:_info.tags ?? ''),
@@ -106,28 +107,4 @@ class _NoteInputViewState extends State<NoteInputView> {
     );
   }
 
-  FormField<InputValue> createField(
-    {
-      String labelText : '',
-      InputValue initialValue : InputValue.empty,
-      void onSaved(InputValue val),
-      String hintText : '',
-      int maxLines : 1,
-    }) {
-
-    return new FormField<InputValue>(
-      initialValue: initialValue,
-      onSaved: onSaved,
-      builder: (FormFieldState<InputValue> field) {
-        return new Input(
-          hintText: hintText,
-          labelText: labelText,
-          value: field.value,
-          onChanged: field.onChanged,
-          errorText: field.errorText,
-          maxLines: maxLines,
-        );
-      },
-    );
-  }
 }

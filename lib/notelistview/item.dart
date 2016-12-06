@@ -15,7 +15,7 @@ class NoteItemView extends StatelessWidget {
     return new ListItem(
       title: new Text(info.title),
       leading: new Text('${info.time.hour}:${info.time.minute.toString().padLeft(2, '0')}'),
-      subtitle: new Text(info.content),
+      subtitle: new Text(info.content.isNotEmpty ? info.content[0] + '..' : '-'),
       onTap: () { showInfoView(context); }
     );
   }

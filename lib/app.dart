@@ -5,6 +5,7 @@ import 'db/db.dart';
 import 'noteview/note_input.dart';
 import 'notelistview/notelistview.dart';
 import 'home_loadingview.dart';
+import 'home_inputpass.dart';
 
 
 
@@ -49,6 +50,11 @@ class MainAppState extends State<MainApp> with WidgetsBindingObserver, StoreWatc
 
     if (_noteStore.state == NoteStoreState.ready) {
       home = new NoteListView();
+    } else if (_noteStore.state == NoteStoreState.error &&
+      (_noteStore.error == NoteStoreError.fileNotFound ||
+        _noteStore.error == NoteStoreError.invalidPassword ||
+        _noteStore.error == NoteStoreError.needPassword)) {
+        home = new HomeInputPassView(noteStore: _noteStore);
     } else {
       home = new HomeLoadingView(noteStore: _noteStore);
     }
