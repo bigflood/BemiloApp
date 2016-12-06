@@ -1,0 +1,8 @@
+name: bemilo
+description: A new flutter project.
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_flux:
+    git: git://github.com/flutter/flutter_flux.git
+  pointycastle:

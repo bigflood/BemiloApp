@@ -1,0 +1,9 @@
+name: bemilo
+uses-material-design: true
+assets:
+  - assets/appbar/appbar_background_layer0.png
+  - assets/appbar/appbar_background_layer1.png
+  - assets/appbar/appbar_background_layer2.png
+  - assets/appbar/appbar_background_layer3.png
+  - assets/appbar/appbar_background_layer4.png
+  - assets/appbar/appbar_background_layer5.png
